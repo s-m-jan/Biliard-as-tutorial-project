@@ -156,11 +156,12 @@ Ball.prototype.draw = function(){
 }
 
 Ball.prototype.update = function(delta){
-
+    this.position.addTo(this.velocity.mult(delta))
+    this.velocity = this.velocity.mult(.98)
 }
 
 Ball.prototype.shoot = function(power, rotation){
-
+    this.velocity = new Vector( power * Math.cos(rotation), power* Math.sin(rotation));
 }
 
   
@@ -181,7 +182,19 @@ Stick.prototype.draw = function(){
 }
 
 Stick.prototype.update = function(){
-    this.updateRotation()
+    this.updateRotation();
+    if ( mouse.left.down) {
+        this.increasePower()
+    } else if(this.power > 0){
+        this.shoot();
+    }
+}
+
+Stick.prototype.shoot = function(){
+    this.onShoot(this.power, this.rotation);
+    this.power = 0;
+    this.origin = SHOOT_ORIGIN.copy();
+
 }
 
 Stick.prototype.updateRotation = function(){
@@ -189,6 +202,12 @@ Stick.prototype.updateRotation = function(){
     let aadjacent = mouse.position.x - this.position.x;
     this.rotation = Math.atan2(oposite,aadjacent);
    
+}
+
+Stick.prototype.increasePower = function(){
+    this.power += 100;
+    this.origin.x += 5;
+    
 }
 
 
@@ -211,6 +230,7 @@ GameWorld.prototype.draw = function(){
 
 GameWorld.prototype.update = function(){
     this.stick.update()
+    this.whiteBall.update()
 }
 
 let gameWorld = new GameWorld();
