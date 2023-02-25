@@ -1,6 +1,9 @@
+const BALL_ORIGIN = new Vector(25, 25);
 
+const STICK_ORIGIN = new Vector(970, 11);
+const SHOOT_ORIGIN = new Vector(950, 11);
 
-//////load asset////////
+//////load asset//////// 
 let sprites = {}
 let assetsStillLoading = 0;
 
@@ -141,21 +144,73 @@ Canvas2D.prototype.drawImage = function(
 
 let canvas = new Canvas2D();
 
-///////////////////
 
+//////////Ball/////////
+function Ball(position){
+    this.position = position;
+    this.velocity = new Vector();
+}
+
+Ball.prototype.draw = function(){
+    canvas.drawImage(sprites.whiteBall, this.position, BALL_ORIGIN)
+}
+
+Ball.prototype.update = function(delta){
+
+}
+
+Ball.prototype.shoot = function(power, rotation){
+
+}
+
+  
+///////////////////////
+
+///////Stick///////////
+function Stick(position, onShoot){
+    this.position = position;
+    this.rotation = 0;
+    this.onShoot = onShoot;
+    this.power = 0;
+    this.origin = STICK_ORIGIN.copy();
+
+}
+
+Stick.prototype.draw = function(){
+    canvas.drawImage(sprites.stick,this.position, this.origin, this.rotation )
+}
+
+Stick.prototype.update = function(){
+    this.updateRotation()
+}
+
+Stick.prototype.updateRotation = function(){
+    let oposite = mouse.position.y - this.position.y;
+    let aadjacent = mouse.position.x - this.position.x;
+    this.rotation = Math.atan2(oposite,aadjacent);
+   
+}
+
+
+
+///////////////////
 
 
 //////GameWorld////////
 function GameWorld(){
+    this.whiteBall = new Ball(new Vector(413,413));
+    this.stick = new Stick(new Vector(413, 413),this.whiteBall.shoot.bind(this.whiteBall))
 
 }
 
 GameWorld.prototype.draw = function(){
     canvas.drawImage(sprites.background)
+    this.whiteBall.draw()
+    this.stick.draw()
 }
 
 GameWorld.prototype.update = function(){
-
+    this.stick.update()
 }
 
 let gameWorld = new GameWorld();
@@ -168,4 +223,4 @@ function animate(){
     requestAnimationFrame(animate)
 }
 
-loadAssets(animate)
+loadAssets(animate)  
