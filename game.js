@@ -36,7 +36,7 @@ function assetsLoadingLoop(callback){
     }
 }
 
-/////////////////
+
 
 //////vector/////
 function Vector(x = 0 , y = 0){
