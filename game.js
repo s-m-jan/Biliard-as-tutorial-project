@@ -2,6 +2,7 @@ const BALL_ORIGIN = new Vector(25, 25);
 
 const STICK_ORIGIN = new Vector(970, 11);
 const SHOOT_ORIGIN = new Vector(950, 11);
+const DELTA = 1/100;
 
 //////load asset//////// 
 let sprites = {}
@@ -85,7 +86,7 @@ function handleMouseMove(e){
     mouse.position.y = e.pageY;
 }
 function handleMouseDown(e){
-    handleMouseMove()
+    handleMouseMove(e)
     if(e.which === 1){
         mouse.left.down = true;
         mouse.left.pressed = true;
@@ -104,7 +105,7 @@ MouseHandler.prototype.reset = function(){
 }
 
 function handleMouseUp(e){
-    handleMouseMove()
+    handleMouseMove(e)
     if(e.which === 1){
         mouse.left.down = false;
     }else if(e.which === 2){
@@ -149,6 +150,7 @@ let canvas = new Canvas2D();
 function Ball(position){
     this.position = position;
     this.velocity = new Vector();
+    this.moving = false;
 }
 
 Ball.prototype.draw = function(){
@@ -156,11 +158,17 @@ Ball.prototype.draw = function(){
 }
 
 Ball.prototype.update = function(delta){
-
+    this.position.addTo(this.velocity.mult(delta))
+    this.velocity = this.velocity.mult(.98)
+    if(this.velocity.length() < 5){
+        this.velocity = new Vector();
+        this.moving = false;
+    }
 }
 
 Ball.prototype.shoot = function(power, rotation){
-
+    this.velocity = new Vector( power * Math.cos(rotation), power* Math.sin(rotation));
+    this.moving = true;
 }
 
   
@@ -173,6 +181,7 @@ function Stick(position, onShoot){
     this.onShoot = onShoot;
     this.power = 0;
     this.origin = STICK_ORIGIN.copy();
+    this.shot = false;
 
 }
 
@@ -181,7 +190,20 @@ Stick.prototype.draw = function(){
 }
 
 Stick.prototype.update = function(){
-    this.updateRotation()
+    this.updateRotation();
+    if ( mouse.left.down) {
+        this.increasePower()
+    } else if(this.power > 0){
+        this.shoot();
+    }
+}
+
+Stick.prototype.shoot = function(){
+    this.onShoot(this.power, this.rotation);
+    this.power = 0;
+    this.origin = SHOOT_ORIGIN.copy();
+    this.shot = true;
+
 }
 
 Stick.prototype.updateRotation = function(){
@@ -189,6 +211,17 @@ Stick.prototype.updateRotation = function(){
     let aadjacent = mouse.position.x - this.position.x;
     this.rotation = Math.atan2(oposite,aadjacent);
    
+}
+
+Stick.prototype.increasePower = function(){
+    this.power += 100;
+    this.origin.x += 5;
+    
+}
+Stick.prototype.reposition = function(newPosition){
+    this.position = newPosition.copy();
+    this.origin = STICK_ORIGIN.copy();
+    
 }
 
 
@@ -211,6 +244,10 @@ GameWorld.prototype.draw = function(){
 
 GameWorld.prototype.update = function(){
     this.stick.update()
+    this.whiteBall.update(DELTA);
+    if(this.stick.shot && !this.whiteBall.moving){
+        this.stick.reposition(this.whiteBall.position)
+    }
 }
 
 let gameWorld = new GameWorld();
